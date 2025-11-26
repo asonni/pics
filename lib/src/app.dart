@@ -15,10 +15,16 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   int counter = 0;
+  bool isLoading = false;
   final List<ImageModel> images = [];
 
   void buildImage() async {
     counter++;
+
+    setState(() {
+      isLoading = true;
+    });
+
     var response = await get(
       Uri.parse('https://picsum.photos/id/$counter/info'),
     );
@@ -27,6 +33,13 @@ class _AppState extends State<App> {
 
     setState(() {
       images.add(image);
+      isLoading = false;
+    });
+  }
+
+  void deleteImage(String id) {
+    setState(() {
+      images.removeWhere((image) => image.id == id);
     });
   }
 
@@ -38,10 +51,25 @@ class _AppState extends State<App> {
         backgroundColor: Colors.amber,
         foregroundColor: Colors.black,
       ),
-      body: ImageList(images),
+      body: images.isEmpty
+          ? Center(
+              child: Text(
+                'No images found',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            )
+          : ImageList(images: images, onDelete: deleteImage),
       floatingActionButton: FloatingActionButton(
-        onPressed: buildImage,
-        child: Icon(Icons.add, size: 35),
+        onPressed: isLoading ? null : buildImage,
+        child: isLoading
+            ? SizedBox(
+                width: 25,
+                height: 25,
+                child: CircularProgressIndicator(),
+              )
+            : Icon(Icons.add, size: 35),
       ),
     );
   }

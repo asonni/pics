@@ -3,8 +3,13 @@ import 'package:pics/src/models/image_model.dart';
 
 class ImageList extends StatelessWidget {
   final List<ImageModel> images;
+  final void Function(String) onDelete;
 
-  const ImageList(this.images, {super.key});
+  const ImageList({
+    super.key,
+    required this.images,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,27 +18,63 @@ class ImageList extends StatelessWidget {
       itemBuilder: (context, index) {
         return Container(
           margin: EdgeInsets.all(20),
-          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.black,
-            ),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Column(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                SizedBox(
+                  height: 250,
+                  width: double.infinity,
+                  child: Image.network(
+                    images[index].downloadUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      }
+
+                      return Container(
+                        alignment: Alignment.center,
+                        color: Colors.black12,
+                        child: CircularProgressIndicator(),
+                      );
+                    },
+                  ),
                 ),
-                child: Image.network(images[index].downloadUrl),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Text(images[index].author),
-              ),
-            ],
+                Container(
+                  width: double.infinity,
+                  color: Colors.black.withValues(alpha: 0.5),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 2,
+                    horizontal: 16,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        images[index].author,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          final imageId = images[index].id;
+                          onDelete(imageId);
+                        },
+                        // onPressed: () => onDelete(index),
+                        icon: Icon(Icons.delete, color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
