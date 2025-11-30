@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pics/src/controllers/image_controller.dart';
 import 'package:pics/src/models/image_model.dart';
 import 'package:pics/src/widgets/loading_indicator.dart';
 
@@ -20,6 +22,7 @@ class ImageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ImageController imageController = Get.find();
     return ListView.builder(
       itemCount: images.length,
       itemBuilder: (context, index) {
@@ -89,12 +92,42 @@ class ImageList extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              images[index].author,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  images[index].author,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Obx(() {
+                                  final bool isDownloading =
+                                      imageController.isDownloading.value;
+                                  final int selectedIndex =
+                                      imageController.selectedIndex.value;
+                                  return IconButton(
+                                    onPressed: () {
+                                      if (isDownloading &&
+                                          selectedIndex == index) {
+                                        return;
+                                      }
+                                      imageController.downloadImage(index);
+                                    },
+                                    icon:
+                                        isDownloading && selectedIndex == index
+                                        ? LoadingIndicator(
+                                            width: 15,
+                                            height: 15,
+                                            color: Colors.white,
+                                          )
+                                        : Icon(
+                                            Icons.download,
+                                            color: Colors.white,
+                                          ),
+                                  );
+                                }),
+                              ],
                             ),
                             IconButton(
                               onPressed: () {
